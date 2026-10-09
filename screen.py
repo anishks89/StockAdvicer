@@ -31,6 +31,14 @@ HOSTS = ["query1.finance.yahoo.com", "query2.finance.yahoo.com"]
 UA = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 IST = timezone(timedelta(hours=5, minutes=30))
 MIN_SYMBOLS = 450  # below this the data source is failing; keep the last good file
+ERRORS: dict[str, int] = {}  # why fetches failed, for the job log
+
+
+def fail(msg: str) -> int:
+    """Report a failure so it shows as an annotation on the GitHub run."""
+    detail = ", ".join(f"{k} x{v}" for k, v in sorted(ERRORS.items(), key=lambda kv: -kv[1])[:5])
+    print(f"::error::{msg}" + (f" Fetch errors: {detail}" if detail else ""))
+    return 1
 
 
 def http_get(url: str, timeout: int = 20) -> bytes:
@@ -59,14 +67,17 @@ def fetch(symbol: str, ysym: str) -> dict | None:
     """Return computed metrics for one symbol, or None if data is unusable."""
     path = f"/v8/finance/chart/{urllib.parse.quote(ysym)}?range=1y&interval=1d"
     data = None
+    last_error = "unknown"
     for attempt in range(4):
         host = HOSTS[attempt % len(HOSTS)]
         try:
             data = json.loads(http_get(f"https://{host}{path}"))
             break
-        except Exception:
+        except Exception as e:
+            last_error = f"{type(e).__name__} {getattr(e, 'code', '')}".strip()
             time.sleep(1.5 * (attempt + 1))
     if not data:
+        ERRORS[last_error] = ERRORS.get(last_error, 0) + 1
         return None
     try:
         res = data["chart"]["result"][0]
@@ -225,8 +236,7 @@ def main() -> int:
 
     nifty = fetch("^NSEI", "^NSEI")
     if not nifty:
-        print("Could not fetch the Nifty 50; keeping the last good file", file=sys.stderr)
-        return 1
+        return fail("Could not fetch the Nifty 50; kept the last good file.")
     data_day = datetime.fromtimestamp(nifty["t"], IST).date()
     today = datetime.now(IST).date()
     if data_day != today and not force:
@@ -238,8 +248,7 @@ def main() -> int:
     R = {s: r for s, r in zip(symbols, results) if r}
     print(f"{len(R)} of {len(symbols)} fetched")
     if len(R) < MIN_SYMBOLS:
-        print("Too few symbols fetched; keeping the last good file", file=sys.stderr)
-        return 1
+        return fail(f"Only {len(R)} of {len(symbols)} symbols fetched; kept the last good file.")
 
     doc = build(R, nifty)
     doc["generatedAt"] = datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
