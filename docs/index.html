@@ -5,164 +5,251 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Shortlist">
-<meta name="theme-color" content="#0f5f57">
+<meta name="theme-color" content="#f3f5f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1413" media="(prefers-color-scheme: dark)">
 <title>Stock Shortlist</title>
 <link rel="apple-touch-icon" href="icon.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+/* Layout: one thumb-reach column. Compact rows that expand on tap, tabs fixed at the bottom. */
 :root{
   --bg:#f3f5f4; --panel:#fcfdfc; --ink:#101614; --ink2:#4a5652; --ink3:#77837f; --line:#dbe1de;
   --accent:#0f5f57; --accent-soft:#dcebe8; --up:#0a7a2f; --down:#c0322f; --warn-bg:#fff3d6; --warn-ink:#6b4a00;
   --display:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;
   --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --nav:60px;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0f1413; --panel:#171d1b; --ink:#f1f5f3; --ink2:#b4c0bb; --ink3:#86928e; --line:#2a3330;
   --accent:#6fd0c2; --accent-soft:#16312d; --up:#4fc97a; --down:#f0827e; --warn-bg:#3a2e0c; --warn-ink:#f3d58a; color-scheme:dark}}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 56px}
-.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
-h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,5vw,38px);line-height:1.05;margin:0;letter-spacing:-.02em}
-h2{font-family:var(--display);font-weight:700;font-size:21px;margin:0;text-wrap:balance}
-h3{margin:0;font-size:16.5px;font-weight:600;font-family:var(--display)}
-header{display:flex;flex-direction:column;gap:8px}
-section{display:flex;flex-direction:column;gap:14px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.eyebrow.stale{color:var(--warn-ink);background:var(--warn-bg);padding:3px 8px;border-radius:3px;align-self:flex-start}
-.sub{color:var(--ink2);margin:0;max-width:65ch}
-.note{font-size:13px;color:var(--ink3);margin:0;max-width:80ch}
-.note b{color:var(--ink2)}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding:calc(env(safe-area-inset-top,0px) + 14px) 16px calc(var(--nav) + env(safe-area-inset-bottom,0px) + 24px)}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;margin:0;letter-spacing:-.02em}
+h2{font-family:var(--display);font-weight:700;font-size:19px;margin:0;text-wrap:balance}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+header .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.asof{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--accent)}
+.asof.stale{color:var(--warn-ink)}
+.icon-btn{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.icon-btn.spin span{animation:spin .8s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.icon-btn.spin span{animation:none}}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 .up{color:var(--up)} .down{color:var(--down)}
-.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-top:6px}
-.tabs button{font:inherit;font-weight:600;font-size:14.5px;padding:9px 14px;border:0;background:none;color:var(--ink2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
-.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
-.tabs button:focus-visible,.golink:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.tab{display:flex;flex-direction:column;gap:26px}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
-.mood{display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:6px;background:var(--panel);border:1px solid var(--line)}
-.mood h2{font-size:clamp(22px,4.4vw,30px);line-height:1.15}
-.mood p{margin:0;color:var(--ink2);max-width:70ch}
-.state{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:3px;background:var(--warn-bg);color:var(--warn-ink)}
+.sub{color:var(--ink2);margin:0;font-size:14.5px}
+.note{font-size:12.5px;color:var(--ink3);margin:0}
+.note b{color:var(--ink2)}
+.tab{display:flex;flex-direction:column;gap:18px}
+section{display:flex;flex-direction:column;gap:10px}
+
+.mood{display:flex;flex-direction:column;gap:8px;padding:16px;border-radius:12px;background:var(--panel);border:1px solid var(--line)}
+.mood h2{font-size:21px;line-height:1.2}
+.state{display:inline-block;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--warn-bg);color:var(--warn-ink)}
 .state.ok{background:var(--accent-soft);color:var(--accent)}
-.pill{display:inline-block;font-size:11px;padding:1px 6px;border-radius:3px;background:var(--accent-soft);color:var(--accent);font-weight:600;margin-left:6px}
-.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
-.pick{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.pick .top{display:flex;flex-direction:column;gap:6px}
-.nm{font-weight:600;overflow-wrap:anywhere}
-.pick .nm{font-size:15.5px}
-.sy,.meta{font-family:var(--mono);font-size:12px;color:var(--ink3)}
-.pick .px{font-family:var(--mono);font-size:20px}
-.pick ul{margin:0;padding-left:18px;color:var(--ink2);font-size:13.5px;display:flex;flex-direction:column;gap:3px}
-.pick .warn{font-size:12.5px;background:var(--warn-bg);color:var(--warn-ink);padding:4px 8px;border-radius:3px}
-.calc{display:flex;flex-direction:column;gap:12px}
-.calc label{font-weight:600}
-.calc input{font:inherit;font-family:var(--mono);padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);width:180px;max-width:100%}
-.plain{margin:0;padding-left:18px;color:var(--ink2);display:flex;flex-direction:column;gap:6px;max-width:75ch}
-.golink{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
-.scroll{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:13.5px}
-th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
-th:first-child,td:first-child{text-align:left;white-space:normal;min-width:180px}
-th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:600;vertical-align:bottom}
-td.num{font-size:13px}
-tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--ink)}
-.cond{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border:1px solid var(--line);border-radius:6px;background:var(--panel)}
-.cond>div{padding:16px 18px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--line);min-width:0}
-.cond .k{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}.cond .v{font-family:var(--mono);font-size:19px}.cond .n{font-size:13px;color:var(--ink2)}
-.rule{margin:2px 0 10px;font-size:13.5px;color:var(--ink2);max-width:80ch}.rule b{color:var(--ink);font-weight:600}
-.empty{border:1px dashed var(--ink3);border-radius:6px;padding:22px;color:var(--ink2)}
-footer{border-top:1px solid var(--line);padding-top:16px}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:2px}
+.facts div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.facts .k{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.facts .v{font-family:var(--mono);font-size:15.5px;font-variant-numeric:tabular-nums}
+.mood details summary{font-size:13.5px;color:var(--accent);cursor:pointer;list-style:none;padding:6px 0;min-height:32px}
+.mood details summary::-webkit-details-marker{display:none}
+.mood details p{margin:4px 0 0;color:var(--ink2);font-size:14px}
+
+.rows{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.row{border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row summary{display:grid;grid-template-columns:1fr auto 18px;gap:10px;align-items:center;padding:12px 12px 12px 14px;min-height:60px;cursor:pointer;list-style:none}
+.row summary::-webkit-details-marker{display:none}
+.row .who{min-width:0;display:flex;flex-direction:column;gap:1px}
+.row .nm{font-weight:600;font-size:15.5px;line-height:1.25;overflow-wrap:anywhere}
+.row .sy{font-family:var(--mono);font-size:11.5px;color:var(--ink3)}
+.row .rt{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.row .px{font-family:var(--mono);font-size:15.5px;font-variant-numeric:tabular-nums}
+.row .dy{font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.row .chev{color:var(--ink3);font-size:14px;transition:transform .15s}
+.row[open] .chev{transform:rotate(90deg)}
+@media (prefers-reduced-motion: reduce){.row .chev{transition:none}}
+.row .more{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin:0}
+.stats div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.stats dt{font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.stats dd{margin:0;font-family:var(--mono);font-size:14.5px;font-variant-numeric:tabular-nums}
+.warn{font-size:13px;background:var(--warn-bg);color:var(--warn-ink);padding:8px 10px;border-radius:8px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn-ink);margin-left:6px;vertical-align:middle}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--line);padding:4px;border-radius:12px}
+.seg button{font:inherit;font-size:14px;font-weight:600;min-height:44px;border:0;border-radius:9px;background:none;color:var(--ink2);cursor:pointer;padding:4px 6px;line-height:1.15}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink)}
+.seg small{display:block;font-weight:400;font-size:11.5px;color:var(--ink3)}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:600;font-size:15px}
+.field .in{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg)}
+.field .in span{font-family:var(--mono);color:var(--ink3);font-size:18px}
+.field input{font:inherit;font-family:var(--mono);font-size:18px;border:0;background:none;color:var(--ink);width:100%;min-height:48px;outline:none}
+.field .in:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{font:inherit;font-family:var(--mono);font-size:14px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.split{display:flex;flex-direction:column}
+.split .ln{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.split .ln:last-child{border-bottom:0;font-weight:600}
+.split .q{font-family:var(--mono);color:var(--ink2);font-size:13.5px;white-space:nowrap}
+.split .c{font-family:var(--mono);min-width:72px;text-align:right}
+.plain{margin:0;padding-left:20px;color:var(--ink2);display:flex;flex-direction:column;gap:8px;font-size:14.5px}
+.empty{border:1px dashed var(--ink3);border-radius:12px;padding:20px;color:var(--ink2)}
+
+nav.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--panel);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.bar div{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr)}
+nav.bar button{font:inherit;font-size:12.5px;font-weight:600;height:var(--nav);border:0;background:none;color:var(--ink3);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-top:3px solid transparent}
+nav.bar button i{font-style:normal;font-size:19px;line-height:1}
+nav.bar button[aria-selected="true"]{color:var(--accent);border-top-color:var(--accent)}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <span class="eyebrow" id="asOf">Loading</span>
-  <h1>Stock Shortlist</h1>
-  <nav class="tabs" role="tablist" aria-label="Sections">
-    <button role="tab" id="tab-today" data-t="today" aria-selected="true">Today's shortlist</button>
-    <button role="tab" id="tab-lists" data-t="lists" aria-selected="false">More lists</button>
-  </nav>
+  <div class="t"><h1>Stock Shortlist</h1><span class="asof" id="asOf">Loading</span></div>
+  <button class="icon-btn" id="refresh" aria-label="Refresh"><span aria-hidden="true">↻</span></button>
 </header>
+
 <div class="tab" id="p-today" role="tabpanel" aria-labelledby="tab-today"><div class="empty">Loading today's shortlist.</div></div>
 <div class="tab" id="p-lists" role="tabpanel" aria-labelledby="tab-lists" hidden></div>
-<footer>
-  <p class="note">A personal, rule-based screen of the Nifty 500. It lists stocks that meet fixed mechanical rules and does not predict prices. It is not investment advice or a recommendation to buy or sell, and its author is not a SEBI-registered adviser. Prices are from Yahoo Finance and can lag the exchange by about 15 minutes. Splits, bonuses and demergers can distort a stock's averages. Past returns do not predict future returns.</p>
-</footer>
+<div class="tab" id="p-start" role="tabpanel" aria-labelledby="tab-start" hidden></div>
+
+<p class="note">A personal, rule-based screen of the Nifty 500. It lists stocks that meet fixed rules and does not predict prices. Not investment advice or a recommendation to buy or sell; the author is not a SEBI-registered adviser. Prices from Yahoo Finance can lag the exchange by about 15 minutes. Splits, bonuses and demergers can distort a stock's averages.</p>
 </div>
+
+<nav class="bar" aria-label="Sections"><div role="tablist">
+  <button role="tab" id="tab-today" data-t="today" aria-selected="true"><i aria-hidden="true">★</i>Shortlist</button>
+  <button role="tab" id="tab-lists" data-t="lists" aria-selected="false"><i aria-hidden="true">☰</i>More lists</button>
+  <button role="tab" id="tab-start" data-t="start" aria-selected="false"><i aria-hidden="true">₹</i>Start small</button>
+</div></nav>
+
 <script>
 const $=s=>document.querySelector(s);
 const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num=x=>typeof x==='number'&&isFinite(x)?x:null;
 const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
-const px=n=>num(n)==null?'–':n.toLocaleString('en-IN',{minimumFractionDigits:2});
+const px=n=>num(n)==null?'–':n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
 const pct=(n,d=1)=>n==null?'–':(n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(d)+'%';
 const cls=n=>n==null?'':n>=0?'up':'down';
-let steadyRows=[];
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+let D=null,steadyRows=[],listKey=store.get('list')||'mom';
+
+const LISTS={
+  mom:{t:'Momentum',s:'Near highs',rule:'Price above the 50-day average, 50-day above the 200-day, and within 5% of the 52-week high. Ranked by 3-month return.',weak:'Strong runs reverse sharply when the market turns, and the top names are often the most stretched.'},
+  pull:{t:'Pullback',s:'Dip in uptrend',rule:'Above the 200-day average, within 3% of the 50-day average, and at least 5% below the 20-day high. Ranked by 6-month return.',weak:'A dip to the average can be the start of a downtrend rather than a pause.'},
+  low:{t:'Beaten down',s:'Near lows',rule:'Within 5% of the 52-week low with RSI below 30. Ranked by lowest RSI.',weak:'Stocks at lows often keep falling, and there is usually a reason they are there.'}
+};
+
+function rowHtml(r,vm){
+  const hot=num(r.rsi)>=70;
+  return `<details class="row"><summary>
+    <span class="who"><span class="nm">${esc(r.n||r.s)}</span><span class="sy">${esc(r.s)}${hot?'<span class="dot" title="Risen quickly"></span>':''}</span></span>
+    <span class="rt"><span class="px">₹${px(r.c)}</span><span class="dy ${cls(num(r.day))}">${pct(num(r.day),2)}</span></span>
+    <span class="chev" aria-hidden="true">›</span></summary>
+    <div class="more"><dl class="stats">
+      <div><dt>3 months</dt><dd class="${cls(num(r.r3m))}">${pct(num(r.r3m))}</dd></div>
+      <div><dt>6 months</dt><dd class="${cls(num(r.r6m))}">${pct(num(r.r6m))}</dd></div>
+      <div><dt>From 52-week high</dt><dd>${pct(num(r.fh))}</dd></div>
+      <div><dt>Above 52-week low</dt><dd>${pct(num(r.fl))}</dd></div>
+      <div><dt>vs 50-day average</dt><dd class="${cls(num(r.p50))}">${pct(num(r.p50))}</dd></div>
+      <div><dt>vs 200-day average</dt><dd class="${cls(num(r.p200))}">${pct(num(r.p200))}</dd></div>
+      <div><dt>Price swings a year</dt><dd>${num(r.vol)==null?'–':r.vol+'%'}${vm?` <span style="color:var(--ink3)">(typical ${vm}%)</span>`:''}</dd></div>
+      <div><dt>RSI · volume</dt><dd>${num(r.rsi)??'–'} · ${num(r.vx)==null?'–':r.vx.toFixed(1)+'×'}</dd></div>
+    </dl>${hot?`<div class="warn">Has risen quickly in the last two weeks (RSI ${r.rsi}). Fast rises often pause or pull back.</div>`:''}</div></details>`;
+}
+
+function drawToday(){
+  const d=D,n=d.nifty||{},b=d.breadth||{},cn=d.counts||{},vm=num(b.volMed);
+  const a50=n.c>n.d50,a200=n.c>n.d200,up=a50&&a200,dayUp=n.c>=n.pc;
+  const head=up?(dayUp?'Market is up today and in an uptrend.':'Market is down today but still in an uptrend.'):(dayUp?'Market is up today, but the wider trend is still down.':'Market is down today and the wider trend is down.');
+  const rows=steadyRows,total=num(cn.steady)??rows.length;
+  $('#p-today').innerHTML=`
+  <div class="mood"><span><span class="state ${up?'ok':''}">${up?'"Market is up" condition met':'"Market is up" condition not met'}</span></span>
+   <h2>${head}</h2>
+   <div class="facts"><div><span class="k">Nifty 50</span><span class="v">${num(n.c)?Math.round(n.c).toLocaleString('en-IN'):'–'}</span></div>
+    <div><span class="k">Today</span><span class="v ${cls(n.c-n.pc)}">${pct((n.c/n.pc-1)*100,2)}</span></div>
+    <div><span class="k">Rising / falling</span><span class="v">${num(b.adv)??'–'} / ${num(b.dec)??'–'}</span></div></div>
+   <details><summary>More about the market ›</summary><p>The index is ${pct((n.c/n.d50-1)*100)} from its 50-day average and ${pct((n.c/n.d200-1)*100)} from its 200-day average. ${num(b.a200)??'–'} of ${num(b.n200)??'–'} Nifty 500 stocks are above their own 200-day average.${up?'':' While the trend is down, stocks that look strong can still be pulled lower with the market.'}</p></details></div>
+  <section><h2>Steady uptrend shortlist</h2>
+   <p class="sub">${rows.length?`The ${rows.length} calmest of ${total} stocks that pass the rule today. Tap a stock for details.`:'No stock passes the rule today.'}</p>
+   ${rows.length?`<div class="rows">${rows.map(r=>rowHtml(r,vm)).join('')}</div>`:''}
+   <p class="note"><b>How the list is made:</b> price above the 50-day average, 50-day above the 200-day, traded value in the top half of the Nifty 500, ranked by the smallest price swings over 3 months. <b>Known weakness:</b> calm stocks still fall in a broad sell-off, lag in a sharp rally, and a trend rule reacts only after the trend has changed. They are listed because they meet the rule; whether to buy any is your decision.</p></section>`;
+}
+
+function drawLists(){
+  const d=D,cn=d.counts||{},vm=num((d.breadth||{}).volMed),L=LISTS[listKey],rs=d[listKey]||[],tot=num(cn[listKey])??rs.length;
+  $('#p-lists').innerHTML=`
+  <div class="seg" role="group" aria-label="Choose a list">${Object.entries(LISTS).map(([k,v])=>`<button data-list="${k}" aria-pressed="${k===listKey}">${v.t}<small>${num(cn[k])??0} pass</small></button>`).join('')}</div>
+  <section><h2>${L.t}</h2>
+   <p class="sub">${rs.length?`Top ${rs.length} of ${tot} that pass today. Tap a stock for details.`:'No stock passes this rule today.'}</p>
+   ${rs.length?`<div class="rows">${rs.map(r=>rowHtml(r,vm)).join('')}</div>`:''}
+   <p class="note"><b>Rule:</b> ${L.rule} <b>Known weakness:</b> ${L.weak}</p>
+   <p class="note">A mid-session run uses the day's volume so far, so volume ratios read low before the close.</p></section>`;
+}
 
 function calcDraw(){
-  const el=$('#amt'),out=$('#calcOut');if(!el||!out)return;
-  const amt=parseFloat(el.value),rows=steadyRows;
-  if(!(amt>0)||!rows.length){out.innerHTML='<p class="note">Enter an amount to see how many shares of each it covers.</p>';return}
+  const out=$('#calcOut'),el=$('#amt');if(!out||!el)return;const amt=parseFloat(el.value),rows=steadyRows;
+  store.set('amt',el.value||'');
+  if(!rows.length){out.innerHTML='<p class="note">No stocks on the shortlist today.</p>';return}
+  if(!(amt>0)){out.innerHTML='<p class="note">Enter an amount to see how many shares of each stock it covers.</p>';return}
   const each=amt/rows.length;let used=0;
-  const tr=rows.map(r=>{const q=Math.floor(each/r.c),cost=q*r.c;used+=cost;return `<tr><td><span class="nm">${esc(r.n||r.s)}</span></td><td class="num">${px(r.c)}</td><td class="num">${q}</td><td class="num">${inr(cost)}</td></tr>`}).join('');
-  out.innerHTML=`<div class="scroll"><table><thead><tr><th>Stock</th><th>Price</th><th>Shares</th><th>Cost</th></tr></thead><tbody>${tr}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td class="num">${inr(used)}</td></tr></tfoot></table></div><p class="note">${inr(each)} per stock. ${inr(amt-used)} of your ${inr(amt)} is left over because shares are whole numbers. Brokerage and taxes are extra.</p>`;
+  const ln=rows.map(r=>{const q=Math.floor(each/r.c),cost=q*r.c;used+=cost;return `<div class="ln"><span>${esc(r.n||r.s)}</span><span class="q">${q} × ₹${px(r.c)}</span><span class="c">${inr(cost)}</span></div>`}).join('');
+  out.innerHTML=`<div class="split">${ln}<div class="ln"><span>Total used</span><span class="q"></span><span class="c">${inr(used)}</span></div></div><p class="note">${inr(each)} per stock. ${inr(amt-used)} is left over because shares are whole numbers. Brokerage and taxes are extra.</p>`;
+}
+function drawStart(){
+  const rows=steadyRows,keep=$('#amt')?$('#amt').value:(store.get('amt')||'');
+  $('#p-start').innerHTML=`
+  <section><h2>If you start small</h2>
+   <div class="panel"><div class="field"><label for="amt">Amount to split equally across today's ${rows.length} shortlisted stocks</label>
+    <div class="in"><span>₹</span><input id="amt" type="number" min="0" step="500" inputmode="numeric" placeholder="10000" autocomplete="off"></div></div>
+    <div class="chips">${[5000,10000,25000,50000].map(v=>`<button data-amt="${v}">${inr(v)}</button>`).join('')}</div>
+    <div id="calcOut"></div></div></section>
+  <section><h2>Before you buy</h2><ul class="plain">
+   <li>A small first amount limits what a wrong call can cost while you learn how these lists behave.</li>
+   <li>Spreading it over several stocks means one bad result hurts less.</li>
+   <li>Decide the loss at which you would sell, and write it down first.</li>
+   <li>The list changes daily. A stock dropping off means it no longer meets the rule; it is not a sell signal by itself.</li></ul></section>`;
+  const a=$('#amt');a.value=keep;a.addEventListener('input',calcDraw);calcDraw();
 }
 
 function render(d){
-  const n=d.nifty||{},b=d.breadth||{},cn=d.counts||{};
+  D=d;steadyRows=(d.steady||[]).filter(r=>num(r.c)!=null).slice(0,5);
   const when=new Date(d.asOf),ok=!isNaN(when);
-  const ist=ok?when.toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'}):'';
-  const ageH=ok?(Date.now()-when.getTime())/36e5:0;
-  const as=$('#asOf');as.textContent=ok?'As of '+ist+' IST'+(ageH>30?' · not updated since':''):'Latest run';as.classList.toggle('stale',ageH>30);
-  const a50=n.c>n.d50,a200=n.c>n.d200,up=a50&&a200,dayUp=n.c>=n.pc;
-  const head=up?(dayUp?'The market is up today and in an uptrend.':'The market is down today but still in an uptrend.'):(dayUp?'The market is up today, but the wider trend is still down.':'The market is down today and the wider trend is down.');
-  const rows=(d.steady||[]).filter(r=>num(r.c)!=null).slice(0,5),total=num(cn.steady)??rows.length;steadyRows=rows;
-  const vm=num(b.volMed);
-  const keep=$('#amt')?$('#amt').value:'';
-  $('#p-today').innerHTML=`
-  <div class="mood"><span><span class="state ${up?'ok':''}">${up?'"Market is up" condition is met':'"Market is up" condition is not met'}</span></span>
-  <h2>${head}</h2>
-  <p>Nifty 50 is at ${num(n.c)?.toLocaleString('en-IN')??'–'} (${pct((n.c/n.pc-1)*100,2)} today). ${num(b.adv)??'–'} of ${num(b.n)??'–'} stocks are rising and ${num(b.dec)??'–'} are falling. The index is ${pct((n.c/n.d50-1)*100)} from its 50-day average and ${pct((n.c/n.d200-1)*100)} from its 200-day average.${up?'':' While the trend is down, stocks that look strong can still be pulled lower with the market.'}</p></div>
-  <section><h2>Steady uptrend shortlist</h2>
-  <p class="sub">${rows.length?`The ${rows.length} calmest of ${total} Nifty 500 stocks that pass the rule today. They are listed because they meet the rule. Whether to buy any of them is your decision.`:'No stock passes the rule today.'}</p>
-  <div class="picks">${rows.map(r=>`<div class="pick"><div class="top"><span><span class="nm">${esc(r.n||r.s)}</span><br><span class="sy">${esc(r.s)}</span></span><span class="px">₹${px(r.c)}</span></div>
-  <span class="num ${cls(num(r.day))}">${pct(num(r.day),2)} today</span>
-  <ul><li>${num(r.r3m)>=0?'Up':'Down'} ${Math.abs(num(r.r3m)??0).toFixed(1)}% over 3 months</li><li>${Math.abs(num(r.fh)??0).toFixed(1)}% below its 52-week high</li><li>${pct(num(r.p200))} against its 200-day average</li><li>Price swings of ${num(r.vol)??'–'}% a year${vm?`; the typical stock swings ${vm}%`:''}</li></ul>
-  ${num(r.rsi)>=70?`<span class="warn">Has risen quickly in the last two weeks (RSI ${r.rsi}). Fast rises often pause or pull back.</span>`:''}</div>`).join('')}</div>
-  <p class="note"><b>How the list is made:</b> price above the 50-day average, 50-day above the 200-day, traded value in the top half of the Nifty 500, then ranked by the smallest price swings over 3 months. <b>Known weakness:</b> calm stocks still fall in a broad sell-off, tend to lag in a sharp rally, and a trend rule only reacts after the trend has changed.</p></section>
-  <section><h2>If you start small</h2>
-  <div class="panel calc"><label for="amt">Amount to split equally across these ${rows.length} stocks (₹)</label><input id="amt" type="number" min="0" step="500" inputmode="numeric" placeholder="e.g. 10000"><div id="calcOut"></div></div>
-  <ul class="plain"><li>A small first amount limits what a wrong call can cost while you learn how these lists behave.</li><li>Spreading it over several stocks means one bad result hurts less.</li><li>Before you buy, decide the loss at which you would sell, and write it down.</li><li>This list changes daily. A stock dropping off the list means it no longer meets the rule; it is not a sell signal by itself.</li></ul></section>
-  <p class="note"><button class="golink" data-t="lists">See three more lists</button></p>`;
-  const a=$('#amt');if(a){a.value=keep;a.addEventListener('input',calcDraw)}calcDraw();
-
-  const lst=(key,title,rule,weak,col)=>{const rs=d[key]||[],tot=num(cn[key])??rs.length;
-    return `<section><h3>${title} <span class="pill">${rs.length?rs.length+' of '+tot+' that pass':'none pass today'}</span></h3><p class="rule"><b>Rule:</b> ${rule} <b>Known weakness:</b> ${weak}</p>${rs.length?`<div class="panel scroll"><table><thead><tr><th>Stock</th><th>Price</th><th>Day</th><th>vs 50-day</th><th>vs 200-day</th><th>${col[0]}</th><th>3 months</th><th>Volume</th><th>RSI</th></tr></thead><tbody>${rs.map(r=>`<tr><td><span class="nm">${esc(r.n||r.s)}</span><br><span class="meta">${esc(r.s)}</span></td><td class="num">${px(r.c)}</td><td class="num ${cls(num(r.day))}">${pct(num(r.day),2)}</td><td class="num ${cls(num(r.p50))}">${pct(num(r.p50))}</td><td class="num ${cls(num(r.p200))}">${pct(num(r.p200))}</td><td class="num">${pct(num(r[col[1]]))}</td><td class="num ${cls(num(r.r3m))}">${pct(num(r.r3m))}</td><td class="num">${num(r.vx)==null?'–':r.vx.toFixed(1)+'×'}</td><td class="num">${num(r.rsi)??'–'}</td></tr>`).join('')}</tbody></table></div>`:''}</section>`};
-  $('#p-lists').innerHTML=`<div class="cond">
-  <div><span class="k">Nifty 50 today</span><span class="v ${cls(n.c-n.pc)}">${pct((n.c/n.pc-1)*100,2)}</span><span class="n">${num(n.c)?.toLocaleString('en-IN')??'–'}</span></div>
-  <div><span class="k">Advancing / declining</span><span class="v">${num(b.adv)??'–'} / ${num(b.dec)??'–'}</span><span class="n">of ${num(b.n)??'–'} Nifty 500 stocks</span></div>
-  <div><span class="k">Above 200-day average</span><span class="v">${b.n200?(b.a200/b.n200*100).toFixed(0)+'%':'–'}</span><span class="n">${num(b.a200)??'–'} of ${num(b.n200)??'–'} stocks</span></div>
-  <div><span class="k">Above 50-day average</span><span class="v">${b.n?(b.a50/b.n*100).toFixed(0)+'%':'–'}</span><span class="n">${num(b.a50)??'–'} of ${num(b.n)??'–'} stocks</span></div></div>
-  ${lst('mom','Momentum','Price above the 50-day average, 50-day above the 200-day, and within 5% of the 52-week high. Ranked by 3-month return.','Strong runs reverse sharply when the market turns, and the highest-ranked names are often the most stretched.',['From 52-week high','fh'])}
-  ${lst('pull','Pullback in an uptrend','Above the 200-day average with the 50-day above the 200-day, within 3% of the 50-day average, and at least 5% below the 20-day high. Ranked by 6-month return.','A dip to the average can be the start of a downtrend rather than a pause.',['From 52-week high','fh'])}
-  ${lst('low','Beaten down','Within 5% of the 52-week low with RSI below 30. Ranked by lowest RSI.','Stocks at lows often keep falling, and there is usually a reason they are there.',['Above 52-week low','fl'])}
-  <p class="note">A mid-session run uses the day's volume so far, so volume ratios read low before the close. RSI is the simple 14-day version.</p>`;
+  const ist=ok?when.toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'}):'';
+  const stale=ok&&(Date.now()-when.getTime())/36e5>30;
+  const as=$('#asOf');as.textContent=ok?(stale?'Last updated ':'As of ')+ist+' IST':'Latest run';as.classList.toggle('stale',stale);
+  drawToday();drawLists();drawStart();
 }
 
-function showTab(k){['today','lists'].forEach(t=>{$('#p-'+t).hidden=t!==k;$('#tab-'+t).setAttribute('aria-selected',t===k?'true':'false')});try{history.replaceState(null,'','#'+k)}catch(e){}}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;showTab(b.dataset.t);if(b.classList.contains('golink'))window.scrollTo(0,0)});
-if(location.hash==='#lists')showTab('lists');
-
-fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(render).catch(()=>{
-  $('#asOf').textContent='Could not load';
-  $('#p-today').innerHTML='<div class="empty"><b>The shortlist could not be loaded.</b> Check your connection and reload. If it keeps failing, the daily run may not have produced a file yet.</div>';
+function showTab(k){['today','lists','start'].forEach(t=>{$('#p-'+t).hidden=t!==k;$('#tab-'+t).setAttribute('aria-selected',t===k?'true':'false')});try{history.replaceState(null,'','#'+k)}catch(e){}window.scrollTo(0,0)}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-t]');if(t){showTab(t.dataset.t);return}
+  const l=e.target.closest('[data-list]');if(l){listKey=l.dataset.list;store.set('list',listKey);drawLists();return}
+  const a=e.target.closest('[data-amt]');if(a){$('#amt').value=a.dataset.amt;calcDraw();return}
 });
+{const h=(location.hash||'').slice(1);if(['lists','start'].includes(h))showTab(h)}
+
+function load(){
+  const btn=$('#refresh');btn.classList.add('spin');
+  return fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(render).catch(()=>{
+    if(D)return; $('#asOf').textContent='Could not load';
+    $('#p-today').innerHTML='<div class="empty"><b>The shortlist could not be loaded.</b> Check your connection and tap the refresh button.</div>';
+  }).finally(()=>btn.classList.remove('spin'));
+}
+$('#refresh').addEventListener('click',load);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&D)load()});
+load();
 </script>
 </body>
 </html>
