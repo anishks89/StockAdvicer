@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Shortlist">
+<meta name="theme-color" content="#0f5f57">
+<title>Stock Shortlist</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f3f5f4; --panel:#fcfdfc; --ink:#101614; --ink2:#4a5652; --ink3:#77837f; --line:#dbe1de;
+  --accent:#0f5f57; --accent-soft:#dcebe8; --up:#0a7a2f; --down:#c0322f; --warn-bg:#fff3d6; --warn-ink:#6b4a00;
+  --display:"Bricolage Grotesque","IBM Plex Sans",system-ui,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f1413; --panel:#171d1b; --ink:#f1f5f3; --ink2:#b4c0bb; --ink3:#86928e; --line:#2a3330;
+  --accent:#6fd0c2; --accent-soft:#16312d; --up:#4fc97a; --down:#f0827e; --warn-bg:#3a2e0c; --warn-ink:#f3d58a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5;padding-inline:16px;padding-block:24px 56px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(28px,5vw,38px);line-height:1.05;margin:0;letter-spacing:-.02em}
+h2{font-family:var(--display);font-weight:700;font-size:21px;margin:0;text-wrap:balance}
+h3{margin:0;font-size:16.5px;font-weight:600;font-family:var(--display)}
+header{display:flex;flex-direction:column;gap:8px}
+section{display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.eyebrow.stale{color:var(--warn-ink);background:var(--warn-bg);padding:3px 8px;border-radius:3px;align-self:flex-start}
+.sub{color:var(--ink2);margin:0;max-width:65ch}
+.note{font-size:13px;color:var(--ink3);margin:0;max-width:80ch}
+.note b{color:var(--ink2)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--up)} .down{color:var(--down)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-top:6px}
+.tabs button{font:inherit;font-weight:600;font-size:14.5px;padding:9px 14px;border:0;background:none;color:var(--ink2);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:focus-visible,.golink:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.tab{display:flex;flex-direction:column;gap:26px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px}
+.mood{display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:6px;background:var(--panel);border:1px solid var(--line)}
+.mood h2{font-size:clamp(22px,4.4vw,30px);line-height:1.15}
+.mood p{margin:0;color:var(--ink2);max-width:70ch}
+.state{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:3px;background:var(--warn-bg);color:var(--warn-ink)}
+.state.ok{background:var(--accent-soft);color:var(--accent)}
+.pill{display:inline-block;font-size:11px;padding:1px 6px;border-radius:3px;background:var(--accent-soft);color:var(--accent);font-weight:600;margin-left:6px}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.pick{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pick .top{display:flex;flex-direction:column;gap:6px}
+.nm{font-weight:600;overflow-wrap:anywhere}
+.pick .nm{font-size:15.5px}
+.sy,.meta{font-family:var(--mono);font-size:12px;color:var(--ink3)}
+.pick .px{font-family:var(--mono);font-size:20px}
+.pick ul{margin:0;padding-left:18px;color:var(--ink2);font-size:13.5px;display:flex;flex-direction:column;gap:3px}
+.pick .warn{font-size:12.5px;background:var(--warn-bg);color:var(--warn-ink);padding:4px 8px;border-radius:3px}
+.calc{display:flex;flex-direction:column;gap:12px}
+.calc label{font-weight:600}
+.calc input{font:inherit;font-family:var(--mono);padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--ink);width:180px;max-width:100%}
+.plain{margin:0;padding-left:18px;color:var(--ink2);display:flex;flex-direction:column;gap:6px;max-width:75ch}
+.golink{font:inherit;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal;min-width:180px}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:600;vertical-align:bottom}
+td.num{font-size:13px}
+tfoot td{font-weight:600;border-bottom:0;border-top:2px solid var(--ink)}
+.cond{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.cond>div{padding:16px 18px;display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--line);min-width:0}
+.cond .k{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em}.cond .v{font-family:var(--mono);font-size:19px}.cond .n{font-size:13px;color:var(--ink2)}
+.rule{margin:2px 0 10px;font-size:13.5px;color:var(--ink2);max-width:80ch}.rule b{color:var(--ink);font-weight:600}
+.empty{border:1px dashed var(--ink3);border-radius:6px;padding:22px;color:var(--ink2)}
+footer{border-top:1px solid var(--line);padding-top:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="eyebrow" id="asOf">Loading</span>
+  <h1>Stock Shortlist</h1>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-today" data-t="today" aria-selected="true">Today's shortlist</button>
+    <button role="tab" id="tab-lists" data-t="lists" aria-selected="false">More lists</button>
+  </nav>
+</header>
+<div class="tab" id="p-today" role="tabpanel" aria-labelledby="tab-today"><div class="empty">Loading today's shortlist.</div></div>
+<div class="tab" id="p-lists" role="tabpanel" aria-labelledby="tab-lists" hidden></div>
+<footer>
+  <p class="note">A personal, rule-based screen of the Nifty 500. It lists stocks that meet fixed mechanical rules and does not predict prices. It is not investment advice or a recommendation to buy or sell, and its author is not a SEBI-registered adviser. Prices are from Yahoo Finance and can lag the exchange by about 15 minutes. Splits, bonuses and demergers can distort a stock's averages. Past returns do not predict future returns.</p>
+</footer>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=x=>String(x).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=x=>typeof x==='number'&&isFinite(x)?x:null;
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const px=n=>num(n)==null?'–':n.toLocaleString('en-IN',{minimumFractionDigits:2});
+const pct=(n,d=1)=>n==null?'–':(n>0?'+':n<0?'−':'')+Math.abs(n).toFixed(d)+'%';
+const cls=n=>n==null?'':n>=0?'up':'down';
+let steadyRows=[];
+
+function calcDraw(){
+  const el=$('#amt'),out=$('#calcOut');if(!el||!out)return;
+  const amt=parseFloat(el.value),rows=steadyRows;
+  if(!(amt>0)||!rows.length){out.innerHTML='<p class="note">Enter an amount to see how many shares of each it covers.</p>';return}
+  const each=amt/rows.length;let used=0;
+  const tr=rows.map(r=>{const q=Math.floor(each/r.c),cost=q*r.c;used+=cost;return `<tr><td><span class="nm">${esc(r.n||r.s)}</span></td><td class="num">${px(r.c)}</td><td class="num">${q}</td><td class="num">${inr(cost)}</td></tr>`}).join('');
+  out.innerHTML=`<div class="scroll"><table><thead><tr><th>Stock</th><th>Price</th><th>Shares</th><th>Cost</th></tr></thead><tbody>${tr}</tbody><tfoot><tr><td>Total</td><td></td><td></td><td class="num">${inr(used)}</td></tr></tfoot></table></div><p class="note">${inr(each)} per stock. ${inr(amt-used)} of your ${inr(amt)} is left over because shares are whole numbers. Brokerage and taxes are extra.</p>`;
+}
+
+function render(d){
+  const n=d.nifty||{},b=d.breadth||{},cn=d.counts||{};
+  const when=new Date(d.asOf),ok=!isNaN(when);
+  const ist=ok?when.toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'}):'';
+  const ageH=ok?(Date.now()-when.getTime())/36e5:0;
+  const as=$('#asOf');as.textContent=ok?'As of '+ist+' IST'+(ageH>30?' · not updated since':''):'Latest run';as.classList.toggle('stale',ageH>30);
+  const a50=n.c>n.d50,a200=n.c>n.d200,up=a50&&a200,dayUp=n.c>=n.pc;
+  const head=up?(dayUp?'The market is up today and in an uptrend.':'The market is down today but still in an uptrend.'):(dayUp?'The market is up today, but the wider trend is still down.':'The market is down today and the wider trend is down.');
+  const rows=(d.steady||[]).filter(r=>num(r.c)!=null).slice(0,5),total=num(cn.steady)??rows.length;steadyRows=rows;
+  const vm=num(b.volMed);
+  const keep=$('#amt')?$('#amt').value:'';
+  $('#p-today').innerHTML=`
+  <div class="mood"><span><span class="state ${up?'ok':''}">${up?'"Market is up" condition is met':'"Market is up" condition is not met'}</span></span>
+  <h2>${head}</h2>
+  <p>Nifty 50 is at ${num(n.c)?.toLocaleString('en-IN')??'–'} (${pct((n.c/n.pc-1)*100,2)} today). ${num(b.adv)??'–'} of ${num(b.n)??'–'} stocks are rising and ${num(b.dec)??'–'} are falling. The index is ${pct((n.c/n.d50-1)*100)} from its 50-day average and ${pct((n.c/n.d200-1)*100)} from its 200-day average.${up?'':' While the trend is down, stocks that look strong can still be pulled lower with the market.'}</p></div>
+  <section><h2>Steady uptrend shortlist</h2>
+  <p class="sub">${rows.length?`The ${rows.length} calmest of ${total} Nifty 500 stocks that pass the rule today. They are listed because they meet the rule. Whether to buy any of them is your decision.`:'No stock passes the rule today.'}</p>
+  <div class="picks">${rows.map(r=>`<div class="pick"><div class="top"><span><span class="nm">${esc(r.n||r.s)}</span><br><span class="sy">${esc(r.s)}</span></span><span class="px">₹${px(r.c)}</span></div>
+  <span class="num ${cls(num(r.day))}">${pct(num(r.day),2)} today</span>
+  <ul><li>${num(r.r3m)>=0?'Up':'Down'} ${Math.abs(num(r.r3m)??0).toFixed(1)}% over 3 months</li><li>${Math.abs(num(r.fh)??0).toFixed(1)}% below its 52-week high</li><li>${pct(num(r.p200))} against its 200-day average</li><li>Price swings of ${num(r.vol)??'–'}% a year${vm?`; the typical stock swings ${vm}%`:''}</li></ul>
+  ${num(r.rsi)>=70?`<span class="warn">Has risen quickly in the last two weeks (RSI ${r.rsi}). Fast rises often pause or pull back.</span>`:''}</div>`).join('')}</div>
+  <p class="note"><b>How the list is made:</b> price above the 50-day average, 50-day above the 200-day, traded value in the top half of the Nifty 500, then ranked by the smallest price swings over 3 months. <b>Known weakness:</b> calm stocks still fall in a broad sell-off, tend to lag in a sharp rally, and a trend rule only reacts after the trend has changed.</p></section>
+  <section><h2>If you start small</h2>
+  <div class="panel calc"><label for="amt">Amount to split equally across these ${rows.length} stocks (₹)</label><input id="amt" type="number" min="0" step="500" inputmode="numeric" placeholder="e.g. 10000"><div id="calcOut"></div></div>
+  <ul class="plain"><li>A small first amount limits what a wrong call can cost while you learn how these lists behave.</li><li>Spreading it over several stocks means one bad result hurts less.</li><li>Before you buy, decide the loss at which you would sell, and write it down.</li><li>This list changes daily. A stock dropping off the list means it no longer meets the rule; it is not a sell signal by itself.</li></ul></section>
+  <p class="note"><button class="golink" data-t="lists">See three more lists</button></p>`;
+  const a=$('#amt');if(a){a.value=keep;a.addEventListener('input',calcDraw)}calcDraw();
+
+  const lst=(key,title,rule,weak,col)=>{const rs=d[key]||[],tot=num(cn[key])??rs.length;
+    return `<section><h3>${title} <span class="pill">${rs.length?rs.length+' of '+tot+' that pass':'none pass today'}</span></h3><p class="rule"><b>Rule:</b> ${rule} <b>Known weakness:</b> ${weak}</p>${rs.length?`<div class="panel scroll"><table><thead><tr><th>Stock</th><th>Price</th><th>Day</th><th>vs 50-day</th><th>vs 200-day</th><th>${col[0]}</th><th>3 months</th><th>Volume</th><th>RSI</th></tr></thead><tbody>${rs.map(r=>`<tr><td><span class="nm">${esc(r.n||r.s)}</span><br><span class="meta">${esc(r.s)}</span></td><td class="num">${px(r.c)}</td><td class="num ${cls(num(r.day))}">${pct(num(r.day),2)}</td><td class="num ${cls(num(r.p50))}">${pct(num(r.p50))}</td><td class="num ${cls(num(r.p200))}">${pct(num(r.p200))}</td><td class="num">${pct(num(r[col[1]]))}</td><td class="num ${cls(num(r.r3m))}">${pct(num(r.r3m))}</td><td class="num">${num(r.vx)==null?'–':r.vx.toFixed(1)+'×'}</td><td class="num">${num(r.rsi)??'–'}</td></tr>`).join('')}</tbody></table></div>`:''}</section>`};
+  $('#p-lists').innerHTML=`<div class="cond">
+  <div><span class="k">Nifty 50 today</span><span class="v ${cls(n.c-n.pc)}">${pct((n.c/n.pc-1)*100,2)}</span><span class="n">${num(n.c)?.toLocaleString('en-IN')??'–'}</span></div>
+  <div><span class="k">Advancing / declining</span><span class="v">${num(b.adv)??'–'} / ${num(b.dec)??'–'}</span><span class="n">of ${num(b.n)??'–'} Nifty 500 stocks</span></div>
+  <div><span class="k">Above 200-day average</span><span class="v">${b.n200?(b.a200/b.n200*100).toFixed(0)+'%':'–'}</span><span class="n">${num(b.a200)??'–'} of ${num(b.n200)??'–'} stocks</span></div>
+  <div><span class="k">Above 50-day average</span><span class="v">${b.n?(b.a50/b.n*100).toFixed(0)+'%':'–'}</span><span class="n">${num(b.a50)??'–'} of ${num(b.n)??'–'} stocks</span></div></div>
+  ${lst('mom','Momentum','Price above the 50-day average, 50-day above the 200-day, and within 5% of the 52-week high. Ranked by 3-month return.','Strong runs reverse sharply when the market turns, and the highest-ranked names are often the most stretched.',['From 52-week high','fh'])}
+  ${lst('pull','Pullback in an uptrend','Above the 200-day average with the 50-day above the 200-day, within 3% of the 50-day average, and at least 5% below the 20-day high. Ranked by 6-month return.','A dip to the average can be the start of a downtrend rather than a pause.',['From 52-week high','fh'])}
+  ${lst('low','Beaten down','Within 5% of the 52-week low with RSI below 30. Ranked by lowest RSI.','Stocks at lows often keep falling, and there is usually a reason they are there.',['Above 52-week low','fl'])}
+  <p class="note">A mid-session run uses the day's volume so far, so volume ratios read low before the close. RSI is the simple 14-day version.</p>`;
+}
+
+function showTab(k){['today','lists'].forEach(t=>{$('#p-'+t).hidden=t!==k;$('#tab-'+t).setAttribute('aria-selected',t===k?'true':'false')});try{history.replaceState(null,'','#'+k)}catch(e){}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(!b)return;showTab(b.dataset.t);if(b.classList.contains('golink'))window.scrollTo(0,0)});
+if(location.hash==='#lists')showTab('lists');
+
+fetch('data.json?ts='+Date.now(),{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(render).catch(()=>{
+  $('#asOf').textContent='Could not load';
+  $('#p-today').innerHTML='<div class="empty"><b>The shortlist could not be loaded.</b> Check your connection and reload. If it keeps failing, the daily run may not have produced a file yet.</div>';
+});
+</script>
+</body>
+</html>

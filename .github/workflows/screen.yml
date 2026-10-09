@@ -1,0 +1,42 @@
+name: Daily screen
+
+on:
+  schedule:
+    # 05:58 UTC = 11:28 AM IST, Monday to Friday. GitHub may start it a few minutes late.
+    - cron: "58 5 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Run even if the market is closed today"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screen
+  cancel-in-progress: false
+
+jobs:
+  screen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run the screen
+        run: python screen.py ${{ inputs.force && '--force' || '' }}
+      - name: Commit the result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data.json symbols.txt
+          if git diff --cached --quiet; then
+            echo "No change to commit"
+          else
+            git commit -m "Screen for $(TZ=Asia/Kolkata date '+%d %b %Y %H:%M IST')"
+            git push
+          fi
