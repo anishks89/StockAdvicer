@@ -27,6 +27,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install the HTTP client
+        run: pip install --quiet "curl_cffi>=0.7"
       - name: Run the screen
         run: python screen.py ${{ inputs.force && '--force' || '' }}
       - name: Commit the result

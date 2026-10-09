@@ -6,7 +6,8 @@ fixed rules, and writes the result to docs/data.json for the static page.
 This is a personal screening tool. It lists stocks that meet mechanical rules.
 It does not predict prices and is not investment advice.
 
-Standard library only, so the scheduled job needs no dependency install.
+One optional dependency, curl_cffi, makes requests look like a browser so that
+Yahoo does not rate-limit the scheduled job. Without it the standard library is used.
 """
 from __future__ import annotations
 
@@ -41,7 +42,24 @@ def fail(msg: str) -> int:
     return 1
 
 
+try:  # Yahoo rate-limits plain Python clients from cloud servers; a browser-like client gets through
+    from curl_cffi import requests as browser_http
+except ImportError:  # still runs locally without it
+    browser_http = None
+
+
+class HttpError(Exception):
+    def __init__(self, code: int):
+        super().__init__(f"HTTP {code}")
+        self.code = code
+
+
 def http_get(url: str, timeout: int = 20) -> bytes:
+    if browser_http is not None:
+        r = browser_http.get(url, impersonate="chrome", timeout=timeout)
+        if r.status_code != 200:
+            raise HttpError(r.status_code)
+        return r.content
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return r.read()

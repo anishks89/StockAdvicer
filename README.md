@@ -11,7 +11,7 @@ The author is not a SEBI-registered adviser.
 
 | Piece | What it does |
 |---|---|
-| `screen.py` | Fetches one year of daily prices per stock from Yahoo Finance, applies the rules, writes `docs/data.json`. Standard library only. |
+| `screen.py` | Fetches one year of daily prices per stock from Yahoo Finance, applies the rules, writes `docs/data.json`. One dependency, `curl_cffi`. |
 | `symbols.txt` | Nifty 500 symbols. Refreshed from NSE when NSE answers. |
 | `docs/index.html` | Static page that reads `data.json`. Served by GitHub Pages. |
 | `.github/workflows/screen.yml` | Runs the screen at 11:28 AM IST on weekdays and commits the result. |
@@ -28,6 +28,7 @@ Change the rules in `build()` in `screen.py`.
 ## Running it
 
 ```bash
+pip install curl_cffi
 python screen.py           # writes docs/data.json if the market traded today
 python screen.py --force   # write even on a holiday or weekend
 ```
